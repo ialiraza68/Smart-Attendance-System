@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Admin Dashboard &middot; Student Management System{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/tables.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Institution Overview</h1>
+        <p class="page-description">Academic session analytics, student statistics, and active faculty overview.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'student_create' %}" class="btn btn-primary"><i class="fa-solid fa-user-plus"></i><span>Register Student</span></a>
+        <a href="{% url 'assignment_create' %}" class="btn btn-secondary"><i class="fa-solid fa-plus"></i><span>Assign Teacher</span></a>
+    </div>
+</div>
+
+<div class="session-banner">
+    <div class="session-banner-content">
+        <h2>Academic Session {{ active_session.name|default:"No active session" }}</h2>
+        {% if active_session %}
+            <p>Active cycle from {{ active_session.start_date|date:"M d, Y" }} through {{ active_session.end_date|date:"M d, Y" }}</p>
+        {% else %}
+            <p>Create or activate an academic session to begin tracking enrollment.</p>
+        {% endif %}
+    </div>
+    <div class="session-banner-badges">
+        <span class="badge-session-active">{% if active_session %}Active Session{% else %}Setup Required{% endif %}</span>
+        <a href="{% url 'sessions' %}" class="btn btn-sm btn-secondary" style="background: rgba(255,255,255,0.15); color: #fff; border-color: rgba(255,255,255,0.3);"><i class="fa-solid fa-gear"></i> Manage</a>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card"><div class="stat-card-top"><span class="stat-label">Total Students</span><div class="stat-icon icon-students"><i class="fa-solid fa-user-graduate"></i></div></div><div class="stat-value tabular-nums">{{ total_students }}</div><div class="stat-meta"><span style="color: var(--color-success); font-weight: 600;">{{ active_students }}</span> Active enrolled</div></div>
+    <div class="stat-card"><div class="stat-card-top"><span class="stat-label">Faculty Members</span><div class="stat-icon icon-teachers"><i class="fa-solid fa-chalkboard-user"></i></div></div><div class="stat-value tabular-nums">{{ total_teachers }}</div><div class="stat-meta"><span style="color: var(--color-text-muted);">{{ total_assignments }} active teaching assignments</span></div></div>
+    <div class="stat-card"><div class="stat-card-top"><span class="stat-label">Classes &amp; Sections</span><div class="stat-icon icon-academic"><i class="fa-solid fa-layer-group"></i></div></div><div class="stat-value tabular-nums">{{ total_classes }}</div><div class="stat-meta"><span>{{ total_sections }} active sections</span></div></div>
+    <div class="stat-card"><div class="stat-card-top"><span class="stat-label">Subjects</span><div class="stat-icon icon-subjects"><i class="fa-solid fa-book"></i></div></div><div class="stat-value tabular-nums">{{ total_subjects }}</div><div class="stat-meta"><span>Across {{ total_programs }} active programs</span></div></div>
+</div>
+
+<div class="dashboard-grid">
+    <div class="card">
+        <div class="card-header"><div><h2 class="card-title"><i class="fa-solid fa-users" style="color: var(--color-primary-light);"></i> Recent Enrolled Students</h2><div class="card-subtitle">Latest admission records{% if active_session %} in {{ active_session.name }}{% endif %}</div></div><a href="{% url 'students' %}" class="btn btn-sm btn-secondary">View All</a></div>
+        <div class="table-responsive"><table class="data-table"><thead><tr><th>Roll No</th><th>Student Name</th><th>Class &amp; Section</th><th>Gender</th><th>Status</th><th style="text-align: right;">Action</th></tr></thead><tbody>
+        {% for student in recent_students %}
+            <tr><td class="tabular-nums" style="font-weight: 600;">{{ student.roll_number }}</td><td><div class="student-name-cell">{{ student.name }}</div><div class="student-sub-cell">Reg: {{ student.registration_number|default:"—" }}</div></td><td>{{ student.section.class_obj.program.name }} &ndash; {{ student.section.class_obj.get_year_display }} (Sec {{ student.section.name }})</td><td><span class="badge badge-gender">{{ student.get_gender_display|upper }}</span></td><td><span class="badge {% if student.status == 'ACTIVE' %}badge-active{% endif %}">{{ student.get_status_display|upper }}</span></td><td style="text-align: right;"><a href="{% url 'student_detail' student.pk %}" class="btn btn-sm btn-secondary">Details</a></td></tr>
+        {% empty %}<tr><td colspan="6">No student admissions found for this session.</td></tr>{% endfor %}
+        </tbody></table></div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        <div class="card"><div class="card-header"><div><h2 class="card-title"><i class="fa-solid fa-chart-pie" style="color: var(--color-primary-light);"></i> Section Capacities</h2><div class="card-subtitle">Active classroom enrollment ratios</div></div></div><div class="card-body">
+        {% for section in capacity_sections %}<div class="capacity-row"><div class="capacity-info"><span class="capacity-title">{{ section.class_obj.program.name }} - {{ section.class_obj.get_year_display }} (Sec {{ section.name }})</span><span class="capacity-stats">{{ section.active_student_count }} / {{ section.capacity }} seats</span></div><div class="capacity-progress"><div class="capacity-bar {{ section.capacity_class }}" style="width: {{ section.capacity_percent }}%;"></div></div></div>{% empty %}<p>No active sections found.</p>{% endfor %}
+        </div><div class="card-footer" style="text-align: right;"><a href="{% url 'sections' %}" style="font-size: 0.8rem; font-weight: 500;">Manage All Sections &rarr;</a></div></div>
+
+        <div class="card"><div class="card-header"><h2 class="card-title"><i class="fa-solid fa-user-tie" style="color: var(--color-primary-light);"></i> Recent Teaching Assignments</h2></div><div class="card-body" style="padding: 0.5rem 1.25rem;">
+        {% for assignment in recent_assignments %}<div style="padding: 0.75rem 0; border-bottom: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: center;"><div><div style="font-weight: 600; font-size: 0.875rem;">{{ assignment.teacher.user.get_full_name|default:assignment.teacher.user.username }}</div><div style="font-size: 0.75rem; color: var(--color-text-muted);">{{ assignment.class_subject.subject.name }} &middot; {{ assignment.class_subject.academic_class.program.name }} {{ assignment.class_subject.academic_class.get_year_display }} ({{ assignment.section.name }})</div></div><span class="badge badge-active">Assigned</span></div>{% empty %}<p>No active teaching assignments found.</p>{% endfor %}
+        </div></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}<script src="{% static 'js/dashboard.js' %}"></script>{% endblock %}

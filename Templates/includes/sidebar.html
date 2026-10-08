@@ -1,0 +1,187 @@
+<!-- Reusable Application Sidebar -->
+<aside class="app-sidebar">
+    <!-- Brand / System Title -->
+    <div class="sidebar-header">
+        <div class="sidebar-brand-icon">
+            <i class="fa-solid fa-graduation-cap"></i>
+        </div>
+        <span class="sidebar-brand-text">SMS Portal</span>
+    </div>
+
+    <!-- Active Role Indicator -->
+    <div class="sidebar-role-indicator">
+        <span class="role-badge">
+            {% if request.user.role == 'TEACHER' %}
+                Teacher Portal
+            {% else %}
+                Administrator
+            {% endif %}
+        </span>
+    </div>
+
+    <!-- Navigation Menu Items -->
+    <nav class="sidebar-nav">
+        {% if request.user.role == 'TEACHER' %}
+            <!-- ================= TEACHER NAVIGATION ================= -->
+            <div class="nav-section-title">Overview</div>
+            <ul class="nav-list">
+                <li class="nav-item {% if active_page == 'teacher_dashboard' %}active{% endif %}">
+                    <!-- TODO: Replace # with the actual Django URL for teacher dashboard -->
+                    <a href="{% url 'teacher_dashboard' %}">
+                        <i class="fa-solid fa-gauge nav-icon"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item {% if active_page == 'teacher_profile' %}active{% endif %}">
+                    <!-- TODO: Replace # with the actual Django URL for teacher profile -->
+                    <a href="{% url 'teacher_profile' %}">
+                        <i class="fa-solid fa-user-tie nav-icon"></i>
+                        <span>My Profile</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="nav-section-title">My Academics</div>
+            <ul class="nav-list">
+                <li class="nav-item {% if active_page == 'teacher_classes' %}active{% endif %}">
+                    <!-- TODO: Replace # with the actual Django URL for teacher classes -->
+                    <a href="{% url 'teacher_classes' %}">
+                        <i class="fa-solid fa-chalkboard-user nav-icon"></i>
+                        <span>My Classes</span>
+                    </a>
+                </li>
+                <li class="nav-item {% if active_page == 'teacher_students' %}active{% endif %}">
+                    <!-- TODO: Replace # with the actual Django URL for teacher students -->
+                    <a href="{% url 'teacher_students' %}">
+                        <i class="fa-solid fa-user-graduate nav-icon"></i>
+                        <span>My Students</span>
+                    </a>
+                </li>
+                <li class="nav-item {% if active_page == 'teacher_subjects' %}active{% endif %}">
+                    <!-- TODO: Replace # with the actual Django URL for teacher subjects -->
+                    <a href="{% url 'teacher_subjects' %}">
+                        <i class="fa-solid fa-book-bookmark nav-icon"></i>
+                        <span>My Subjects</span>
+                    </a>
+                </li>
+                <li class="nav-item {% if active_page == 'teacher_assignments' %}active{% endif %}">
+                    <!-- TODO: Replace # with the actual Django URL for teacher assignments -->
+                    <a href="{% url 'teacher_assignments' %}">
+                        <i class="fa-solid fa-clipboard-list nav-icon"></i>
+                        <span>My Assignments</span>
+                    </a>
+                </li>
+            </ul>
+
+        {% else %}
+            <!-- ================= ADMIN NAVIGATION ================= -->
+            <div class="nav-section-title">Main</div>
+            <ul class="nav-list">
+                <li class="nav-item {% if active_page == 'dashboard' %}active{% endif %}">
+                    <a href="{% url 'dashboard_admin' %}">
+                        <i class="fa-solid fa-gauge nav-icon"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="nav-section-title">Academic Structure</div>
+            <ul class="nav-list">
+                <li class="nav-item {% if active_page == 'sessions' %}active{% endif %}">
+                    <!-- TODO: Replace # with the actual Django URL for academic sessions list -->
+                    <a href="{% url 'sessions' %}">
+                        <i class="fa-regular fa-calendar-days nav-icon"></i>
+                        <span>Academic Sessions</span>
+                    </a>
+                </li>
+                <li class="nav-item {% if active_page == 'programs' %}active{% endif %}">
+                    <!-- TODO: Replace # with the actual Django URL for programs list -->
+                    <a href="{% url 'programs' %}">
+                        <i class="fa-solid fa-shapes nav-icon"></i>
+                        <span>Programs</span>
+                    </a>
+                </li>
+                <li class="nav-item {% if active_page == 'classes' %}active{% endif %}">
+                    <!-- TODO: Replace # with the actual Django URL for academic classes list -->
+                    <a href="{% url 'classes' %}">
+                        <i class="fa-solid fa-chalkboard nav-icon"></i>
+                        <span>Academic Classes</span>
+                    </a>
+                </li>
+                <li class="nav-item {% if active_page == 'sections' %}active{% endif %}">
+                    <!-- TODO: Replace # with the actual Django URL for sections list -->
+                    <a href="{% url 'sections' %}">
+                        <i class="fa-solid fa-layer-group nav-icon"></i>
+                        <span>Sections</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="nav-section-title">Student Records</div>
+            <ul class="nav-list">
+                <li class="nav-item {% if active_page == 'students' %}active{% endif %}">
+                    <!-- TODO: Replace # with the actual Django URL for students list -->
+                    <a href="{% url 'students' %}">
+                        <i class="fa-solid fa-user-graduate nav-icon"></i>
+                        <span>Students</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="nav-section-title">Faculty & Assignments</div>
+            <ul class="nav-list">
+                <li class="nav-item {% if active_page == 'teachers' %}active{% endif %}">
+                    <!-- TODO: Replace # with the actual Django URL for teachers list -->
+                    <a href="{% url 'teachers' %}">
+                        <i class="fa-solid fa-user-tie nav-icon"></i>
+                        <span>Teachers</span>
+                    </a>
+                </li>
+                <li class="nav-item {% if active_page == 'assignments' %}active{% endif %}">
+                    <!-- TODO: Replace # with the actual Django URL for teaching assignments list -->
+                    <a href="{% url 'assignments' %}">
+                        <i class="fa-solid fa-network-wired nav-icon"></i>
+                        <span>Teaching Assignments</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="nav-section-title">Curriculum</div>
+            <ul class="nav-list">
+                <li class="nav-item {% if active_page == 'subjects' %}active{% endif %}">
+                    <!-- TODO: Replace # with the actual Django URL for subjects list -->
+                    <a href="{% url 'subjects' %}">
+                        <i class="fa-solid fa-book-open nav-icon"></i>
+                        <span>Subjects</span>
+                    </a>
+                </li>
+                <li class="nav-item {% if active_page == 'class_subjects' %}active{% endif %}">
+                    <!-- TODO: Replace # with the actual Django URL for class subjects list -->
+                    <a href="{% url 'class_subjects' %}">
+                        <i class="fa-solid fa-tags nav-icon"></i>
+                        <span>Class Subjects</span>
+                    </a>
+                </li>
+            </ul>
+        {% endif %}
+    </nav>
+
+    <!-- Sidebar Footer with Authenticated User Profile -->
+    <div class="sidebar-footer">
+        <div class="sidebar-user">
+            <div class="user-avatar-sm">
+                <i class="fa-solid fa-user"></i>
+            </div>
+            <div class="user-details-sm">
+                <div class="user-name-sm">{{ request.user.get_full_name|default:request.user.username }}</div>
+                <div class="user-role-sm">{{ request.user.role }}</div>
+            </div>
+        </div>
+        <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-icon btn-secondary" title="Logout" style="color: var(--color-danger);">
+            <i class="fa-solid fa-power-off"></i>
+            </button>
+        </form>
+    </div>
+</aside>

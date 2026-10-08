@@ -1,0 +1,66 @@
+{% extends "base.html" %}{% load static %}
+{% block title %}Faculty Members · Student Management System{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/tables.css' %}">{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Faculty Members</h1>
+        <p class="page-description">Manage teaching staff accounts and profiles. {{ teacher_count }} teacher accounts
+            found.</p>
+    </div>
+    <div class="page-actions"><a href="{% url 'teacher_create' %}" class="btn btn-primary"><i
+                class="fa-solid fa-user-plus"></i><span>Add Teacher</span></a></div>
+</div>
+<div class="table-card">
+    <form class="table-toolbar" method="get">
+        <div class="table-search-box"><input class="table-search-input" name="q" value="{{ query }}"
+                placeholder="Search teachers by name, username, email, or employee ID..."></div><button
+            class="btn btn-secondary" type="submit">Search</button>
+    </form>
+    <div class="table-responsive">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Employee ID</th>
+                    <th>Teacher Name</th>
+                    <th>Qualification</th>
+                    <th>Phone</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in page_obj %}<tr>
+                    <td>{% if row.has_profile %}<a href="{% url 'teacher_detail' row.teacher.pk %}">{{ row.teacher.employee_id }}</a>{% else %}<span class="badge badge-inactive">Profile pending</span>{% endif %}</td>
+                    <td>{{ row.user.get_full_name|default:row.user.username }}<div>{{ row.user.email|default:"—" }}</div>
+                        <div style="font-size:.75rem;color:var(--color-text-muted);">@{{ row.user.username }}</div>
+                    </td>
+                    <td>{% if row.has_profile %}{{ row.teacher.qualification|default:"—" }}{% else %}—{% endif %}</td>
+                    <td>{% if row.has_profile %}{{ row.teacher.phone|default:row.user.phone|default:"—" }}{% else %}{{ row.user.phone|default:"—" }}{% endif %}</td>
+                    <td>{% if row.has_profile %}{{ row.teacher.is_active|yesno:"ACTIVE,INACTIVE" }}{% else %}<span
+                            class="badge badge-inactive">INCOMPLETE PROFILE</span>{% endif %}</td>
+                    <td>
+                        <div class="table-actions">{% if row.has_profile %}<a
+                                href="{% url 'teacher_detail' row.teacher.pk %}" class="btn btn-sm btn-secondary"
+                                title="View teacher"><i class="fa-solid fa-eye"></i></a><a
+                                href="{% url 'teacher_edit' row.teacher.pk %}" class="btn btn-sm btn-secondary"
+                                title="Edit teacher"><i class="fa-solid fa-pen-to-square"></i></a>{% endif %}<form
+                                id="delete-teacher-{{ row.user.pk }}" method="post"
+                                action="{% url 'teacher_delete' row.user.pk %}" style="display:inline">{% csrf_token %}<button
+                                    type="button" data-modal-target="genericModal"
+                                    data-modal-confirm-form="delete-teacher-{{ row.user.pk }}"
+                                    data-modal-title="Delete teacher account"
+                                    data-modal-message="Delete {{ row.user.get_full_name|default:row.user.username }} and all related teaching records? This action cannot be undone."
+                                    class="btn btn-sm btn-secondary" title="Delete teacher"
+                                    style="color:var(--color-danger);"><i class="fa-solid fa-trash"></i></button></form>
+                        </div>
+                    </td>
+                </tr>{% empty %}<tr>
+                    <td colspan="6">No teachers found.</td>
+                </tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>{% include "includes/pagination.html" %}
+</div>
+{% endblock %}

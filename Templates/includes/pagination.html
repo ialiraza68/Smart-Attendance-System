@@ -1,0 +1,44 @@
+<!-- Reusable Pagination Bar (Django Paginator compatible) -->
+{% if is_paginated or page_obj.has_other_pages %}
+<div class="pagination-container">
+    <div class="pagination-info">
+        Showing Page <strong>{{ page_obj.number|default:1 }}</strong> of <strong>{{ page_obj.paginator.num_pages|default:1 }}</strong>
+        {% if page_obj.paginator.count %}
+            ({{ page_obj.paginator.count }} total records)
+        {% endif %}
+    </div>
+
+    <ul class="pagination-nav">
+        <!-- Previous Page Link -->
+        {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a href="?{% if query %}q={{ query|urlencode }}&{% endif %}page={{ page_obj.previous_page_number }}" class="page-link" aria-label="Previous">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </a>
+            </li>
+        {% else %}
+            <li class="page-item disabled">
+                <span class="page-link"><i class="fa-solid fa-chevron-left"></i></span>
+            </li>
+        {% endif %}
+
+        <!-- Current Page Indicator -->
+        <li class="page-item active">
+            <span class="page-link">{{ page_obj.number|default:1 }}</span>
+        </li>
+
+        <!-- Next Page Link -->
+        {% if page_obj.has_next %}
+            <li class="page-item">
+                <a href="?{% if query %}q={{ query|urlencode }}&{% endif %}page={{ page_obj.next_page_number }}" class="page-link" aria-label="Next">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </a>
+            </li>
+        {% else %}
+            <li class="page-item disabled">
+                <span class="page-link"><i class="fa-solid fa-chevron-right"></i></span>
+            </li>
+        {% endif %}
+    </ul>
+</div>
+{% endif %}

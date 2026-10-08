@@ -1,0 +1,10 @@
+{% extends "base.html" %}{% load static %}
+{% block title %}Programs · Student Management System{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/tables.css' %}">{% endblock %}
+{% block content %}
+<div class="page-header"><div><h1 class="page-title">Educational Programs</h1><p class="page-description">Degree programs and academic disciplines offered.</p></div><div class="page-actions"><a href="{% url 'program_create' %}" class="btn btn-primary"><i class="fa-solid fa-plus"></i><span>Add Program</span></a></div></div>
+<div class="table-card"><form class="table-toolbar" method="get"><div class="table-search-box"><input class="table-search-input" name="q" value="{{ query }}" placeholder="Search programs..."></div><button class="btn btn-secondary" type="submit">Search</button></form>
+<div class="table-responsive"><table class="data-table"><thead><tr><th>Program Name</th><th>Description</th><th>Status</th><th>Created At</th><th>Actions</th></tr></thead><tbody>
+{% for program in page_obj %}<tr><td style="font-weight:600">{{ program.name }}</td><td>{{ program.description|default:"—" }}</td><td><span class="badge {% if program.is_active %}badge-active{% endif %}">{{ program.is_active|yesno:"ACTIVE,INACTIVE" }}</span></td><td>{{ program.created_at|date:"Y-m-d" }}</td><td><div class="table-actions"><a href="{% url 'program_edit' program.pk %}" class="btn btn-sm btn-secondary"><i class="fa-solid fa-pen-to-square"></i></a><form id="delete-program-{{ program.pk }}" method="post" action="{% url 'program_delete' program.pk %}" style="display:inline">{% csrf_token %}<button type="button" data-modal-target="genericModal" data-modal-confirm-form="delete-program-{{ program.pk }}" data-modal-title="Delete program" data-modal-message="Delete {{ program.name }}? Related classes may also be removed." class="btn btn-sm btn-secondary" title="Delete program" style="color:var(--color-danger);"><i class="fa-solid fa-trash"></i></button></form></div></td></tr>{% empty %}<tr><td colspan="5">No programs found.</td></tr>{% endfor %}
+</tbody></table></div>{% include "includes/pagination.html" %}</div>
+{% endblock %}

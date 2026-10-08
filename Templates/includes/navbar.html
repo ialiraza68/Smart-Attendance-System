@@ -1,0 +1,50 @@
+<!-- Reusable Header / Top Navigation Bar -->
+<header class="app-navbar">
+    <!-- Zone 1: Sidebar Toggle & Session Information -->
+    <div class="navbar-zone-left">
+        <button type="button" class="sidebar-toggle-btn" id="sidebarToggle" aria-label="Toggle navigation menu">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+
+        <div class="navbar-session-pill">
+            <i class="fa-regular fa-calendar-check" style="color: var(--color-primary-light);"></i>
+            <span>Active Session: <strong>{{ active_session.name|default:"None configured" }}</strong></span>
+        </div>
+    </div>
+
+    <!-- Zone 2 & 3: User Account & Controls -->
+    <div class="navbar-zone-right">
+        <!-- User Dropdown Menu -->
+        <div class="user-dropdown">
+            <button type="button" class="user-dropdown-btn" id="userDropdownBtn" aria-expanded="false">
+                <span class="user-avatar-sm">
+                    <i class="fa-solid fa-user"></i>
+                </span>
+                <span class="user-name-sm">{{ request.user.get_full_name|default:request.user.username }}</span>
+                <i class="fa-solid fa-chevron-down" style="font-size: 0.7rem; color: var(--color-text-subtle);"></i>
+            </button>
+
+            <ul class="dropdown-menu" id="userDropdownMenu">
+                <li>
+                    <a href="{% if request.user.role == 'TEACHER' %}{% url 'teacher_profile' %}{% else %}{% url 'dashboard' %}{% endif %}" class="dropdown-item">
+                        <i class="fa-regular fa-id-badge"></i>
+                        <span>My Profile</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% if request.user.role == 'TEACHER' %}{% url 'teacher_profile' %}{% else %}{% url 'dashboard' %}{% endif %}" class="dropdown-item">
+                        <i class="fa-solid fa-key"></i>
+                        <span>Change Password</span>
+                    </a>
+                </li>
+                <li class="dropdown-divider"></li>
+                <li>
+                    <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button type="submit" class="dropdown-item" style="color: var(--color-danger); border: 0; background: none; width: 100%; text-align: left;">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                        <span>Sign Out</span>
+                    </button></form>
+                </li>
+            </ul>
+        </div>
+    </div>
+</header>
