@@ -10,6 +10,7 @@ from .models import (
     ClassSubject,
     Teacher,
     TeachingAssignment,
+    StudentAttendance,
 )
 
 
@@ -339,3 +340,57 @@ class TeachingAssignmentAdmin(admin.ModelAdmin):
     @admin.display(description='Class')
     def get_class(self, obj):
         return obj.section.class_obj
+
+@admin.register(StudentAttendance)
+class StudentAttendanceAdmin(admin.ModelAdmin):
+    list_display = (
+        'student',
+        'get_subject',
+        'get_teacher',
+        'get_section',
+        'date',
+        'status',
+        'created_at',
+    )
+
+    list_filter = (
+        'status',
+        'date',
+        'teaching_assignment__teacher',
+        'teaching_assignment__class_subject__subject',
+        'teaching_assignment__section',
+    )
+
+    search_fields = (
+        'student__name',
+        'student__roll_number',
+        'student__registration_number',
+        'teaching_assignment__teacher__user__username',
+        'teaching_assignment__teacher__employee_id',
+        'teaching_assignment__class_subject__subject__name',
+        'teaching_assignment__class_subject__subject__code',
+    )
+
+    readonly_fields = (
+        'created_at',
+        'updated_at',
+    )
+
+    ordering = (
+        '-date',
+        'student',
+    )
+
+    list_per_page = 50
+
+    @admin.display(description='Subject')
+    def get_subject(self, obj):
+        return obj.teaching_assignment.class_subject.subject.name
+
+    @admin.display(description='Teacher')
+    def get_teacher(self, obj):
+        return obj.teaching_assignment.teacher
+
+    @admin.display(description='Section')
+    def get_section(self, obj):
+        return obj.teaching_assignment.section

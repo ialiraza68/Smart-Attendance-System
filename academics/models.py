@@ -309,7 +309,6 @@ class Teacher(models.Model):
     def __str__(self):
         return f"{self.employee_id} - {self.user.get_full_name() or self.user.username}"
 
-
 class TeachingAssignment(models.Model):
     teacher = models.ForeignKey(
         Teacher,
@@ -352,4 +351,66 @@ class TeachingAssignment(models.Model):
             f"{self.teacher} - "
             f"{self.class_subject.subject.name} - "
             f"{self.section}"
+        )
+
+class StudentAttendance(models.Model):
+    STATUS_CHOICES = (
+        ('PRESENT', 'Present'),
+        ('ABSENT', 'Absent'),
+        ('LEAVE', 'Leave'),
+    )
+
+    student = models.ForeignKey(
+        Student,
+        on_delete=models.CASCADE,
+        related_name='attendance_records'
+    )
+
+    teaching_assignment = models.ForeignKey(
+        TeachingAssignment,
+        on_delete=models.CASCADE,
+        related_name='attendance_records'
+    )
+
+    date = models.DateField()
+
+    status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default='PRESENT'
+    )
+
+    remarks = models.TextField(
+        blank=True,
+        null=True
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    'student',
+                    'teaching_assignment',
+                    'date'
+                ],
+                name='unique_student_assignment_date'
+            )
+        ]
+
+        ordering = ['-date', 'student']
+
+    def __str__(self):
+        return (
+            f"{self.student} - "
+            f"{self.teaching_assignment.class_subject.subject.name} - "
+            f"{self.date} - "
+            f"{self.get_status_display()}"
         )
