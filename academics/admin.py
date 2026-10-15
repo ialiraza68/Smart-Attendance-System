@@ -11,6 +11,9 @@ from .models import (
     Teacher,
     TeachingAssignment,
     StudentAttendance,
+    AttendanceSession,
+    AttendanceRecord,
+    AttendanceCorrection,
 )
 
 
@@ -394,3 +397,31 @@ class StudentAttendanceAdmin(admin.ModelAdmin):
     @admin.display(description='Section')
     def get_section(self, obj):
         return obj.teaching_assignment.section
+
+
+@admin.register(AttendanceSession)
+class AttendanceSessionAdmin(admin.ModelAdmin):
+    list_display = ("date", "section", "taken_by", "status", "record_count")
+    list_filter = ("status", "date", "section__class_obj__program")
+    search_fields = ("section__name", "taken_by__employee_id")
+    list_select_related = ("section", "taken_by")
+
+    @admin.display(description="Students")
+    def record_count(self, obj):
+        return obj.records.count()
+
+
+@admin.register(AttendanceRecord)
+class AttendanceRecordAdmin(admin.ModelAdmin):
+    list_display = ("student", "session", "status", "marked_by", "updated_at")
+    list_filter = ("status", "session__date", "session__status")
+    search_fields = ("student__roll_number", "student__name")
+    list_select_related = ("student", "session", "marked_by")
+
+
+@admin.register(AttendanceCorrection)
+class AttendanceCorrectionAdmin(admin.ModelAdmin):
+    list_display = ("record", "previous_status", "new_status", "changed_by", "created_at")
+    list_filter = ("previous_status", "new_status", "created_at")
+    search_fields = ("record__student__roll_number", "reason", "changed_by__username")
+    readonly_fields = ("created_at",)

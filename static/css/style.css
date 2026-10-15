@@ -171,6 +171,14 @@ img {
     transition: transform var(--transition-normal);
 }
 
+.app-layout.sidebar-collapsed .app-sidebar {
+    transform: translateX(-100%);
+}
+
+.app-layout.sidebar-collapsed .main-wrapper {
+    margin-left: 0;
+}
+
 .sidebar-header {
     height: var(--header-height);
     display: flex;
@@ -900,6 +908,14 @@ img {
     }
 
     .app-sidebar.active {
+        transform: translateX(0);
+    }
+
+    .app-layout.sidebar-collapsed .app-sidebar {
+        transform: translateX(-100%);
+    }
+
+    .app-layout:not(.sidebar-collapsed) .app-sidebar.active {
         transform: translateX(0);
     }
 

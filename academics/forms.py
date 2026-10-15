@@ -1,10 +1,12 @@
+from datetime import date
+
 from django import forms
 from django.contrib.auth import get_user_model
 from django.db import transaction
 
 from .models import (
     AcademicClass, AcademicSession, ClassSubject, Program, Section, Student,
-    Subject, Teacher, TeachingAssignment,
+    Subject, Teacher, TeachingAssignment, AttendanceRecord,
 )
 
 
@@ -134,6 +136,45 @@ class TeacherEditUserForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ("first_name", "last_name", "email", "phone")
+
+
+class AttendanceFilterForm(forms.Form):
+    date = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={"type": "date"}),
+    )
+    start_date = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={"type": "date"}),
+    )
+    end_date = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={"type": "date"}),
+    )
+    section = forms.ModelChoiceField(queryset=Section.objects.none(), required=False)
+    status = forms.ChoiceField(
+        choices=[("", "All statuses")] + list(
+            AttendanceRecord.STATUS_CHOICES
+        ),
+        required=False,
+    )
+
+    def __init__(self, *args, sections=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["section"].queryset = sections if sections is not None else Section.objects.none()
+
+    def clean(self):
+        cleaned = super().clean()
+        if cleaned.get("start_date") and cleaned.get("end_date") and cleaned["start_date"] > cleaned["end_date"]:
+            raise forms.ValidationError("Start date cannot be after end date.")
+        if cleaned.get("date") and cleaned["date"] > date.today():
+            raise forms.ValidationError("Attendance date cannot be in the future.")
+        return cleaned
+
+
+class AttendanceCorrectionForm(forms.Form):
+    status = forms.ChoiceField(choices=AttendanceRecord.STATUS_CHOICES)
+    reason = forms.CharField(widget=forms.Textarea, min_length=3)
 
 
 @transaction.atomic

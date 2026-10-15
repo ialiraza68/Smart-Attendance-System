@@ -1,11 +1,11 @@
 <!-- Reusable Application Sidebar -->
-<aside class="app-sidebar">
+<aside class="app-sidebar" id="appSidebar">
     <!-- Brand / System Title -->
     <div class="sidebar-header">
         <div class="sidebar-brand-icon">
             <i class="fa-solid fa-graduation-cap"></i>
         </div>
-        <span class="sidebar-brand-text">SMS Portal</span>
+        <span class="sidebar-brand-text">Attendance System</span>
     </div>
 
     <!-- Active Role Indicator -->
@@ -43,6 +43,15 @@
 
             <div class="nav-section-title">My Academics</div>
             <ul class="nav-list">
+                <li class="nav-item {% if active_page == 'attendance_dashboard' %}active{% endif %}">
+                    <a href="{% url 'attendance_dashboard' %}"><i class="fa-solid fa-calendar-check nav-icon"></i><span>Attendance Dashboard</span></a>
+                </li>
+                <li class="nav-item {% if active_page == 'attendance_take' %}active{% endif %}">
+                    <a href="{% url 'attendance_take' %}"><i class="fa-solid fa-clipboard-check nav-icon"></i><span>Take Attendance</span></a>
+                </li>
+                <li class="nav-item {% if active_page == 'attendance_history' %}active{% endif %}">
+                    <a href="{% url 'attendance_history' %}"><i class="fa-solid fa-clock-rotate-left nav-icon"></i><span>Attendance History</span></a>
+                </li>
                 <li class="nav-item {% if active_page == 'teacher_classes' %}active{% endif %}">
                     <!-- TODO: Replace # with the actual Django URL for teacher classes -->
                     <a href="{% url 'teacher_classes' %}">
@@ -87,6 +96,9 @@
 
             <div class="nav-section-title">Academic Structure</div>
             <ul class="nav-list">
+                <li class="nav-item {% if active_page == 'attendance_dashboard' %}active{% endif %}">
+                    <a href="{% url 'admin_attendance_dashboard' %}"><i class="fa-solid fa-calendar-check nav-icon"></i><span>Attendance Management</span></a>
+                </li>
                 <li class="nav-item {% if active_page == 'sessions' %}active{% endif %}">
                     <!-- TODO: Replace # with the actual Django URL for academic sessions list -->
                     <a href="{% url 'sessions' %}">

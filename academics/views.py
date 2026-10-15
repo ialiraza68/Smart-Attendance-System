@@ -1,3 +1,4 @@
+﻿from datetime import date
 from functools import wraps
 
 from django.contrib import messages
@@ -5,7 +6,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.db.models import Count, Q
 from django.db.models.deletion import ProtectedError
 from django.shortcuts import get_object_or_404, redirect, render
@@ -15,8 +16,13 @@ from .forms import (
     AcademicClassForm, AcademicSessionForm, ClassSubjectForm, ProgramForm,
     SectionForm, StudentForm, SubjectForm, TeacherEditUserForm,
     TeacherProfileForm, TeacherUserForm, TeachingAssignmentForm, save_teacher,
+    AttendanceCorrectionForm, AttendanceFilterForm,
 )
-from .models import AcademicClass, AcademicSession, ClassSubject, Program, Section, Student, Subject, Teacher, TeachingAssignment
+from .models import (
+    AcademicClass, AcademicSession, AttendanceCorrection, AttendanceRecord,
+    AttendanceSession, ClassSubject, Program, Section, Student, Subject,
+    Teacher, TeachingAssignment,
+)
 
 User = get_user_model()
 
@@ -82,6 +88,7 @@ def dashboard(request):
 @role_required("ADMIN")
 def admin_dashboard(request):
     active_session = AcademicSession.objects.filter(is_active=True).first()
+    today_sessions = AttendanceSession.objects.filter(date=date.today())
     all_students = Student.objects.all()
     all_classes = AcademicClass.objects.filter(is_active=True)
     all_sections = Section.objects.filter(is_active=True)
@@ -123,6 +130,11 @@ def admin_dashboard(request):
         "recent_students": student_queryset.select_related("section__class_obj__program", "section__class_obj__session").order_by("-created_at")[:5],
         "capacity_sections": sections[:5],
         "recent_assignments": recent_assignments,
+        "attendance_submitted_today": today_sessions.filter(status="SUBMITTED").count(),
+        "attendance_draft_today": today_sessions.filter(status="DRAFT").count(),
+        "attendance_present_today": AttendanceRecord.objects.filter(
+            session__date=date.today(), status="PRESENT"
+        ).count(),
     })
 
 
@@ -442,3 +454,225 @@ def teacher_subjects(request):
         ).distinct().count()
         subject_rows.append(subject)
     return render(request, "Teacher/subjects/list.html", {"subjects": subject_rows, "active_page": "teacher_subjects"})
+
+
+def _attendance_sections(request):
+    sections = Section.objects.filter(is_active=True, class_obj__is_active=True)
+    if request.user.role == "TEACHER":
+        sections = sections.filter(
+            teaching_assignments__teacher__user=request.user,
+            teaching_assignments__is_active=True,
+        )
+    return sections.select_related("class_obj__program", "class_obj__session").distinct()
+
+
+def _attendance_session_queryset(request):
+    qs = AttendanceSession.objects.select_related(
+        "section__class_obj__program", "section__class_obj__session", "taken_by__user"
+    ).annotate(
+        student_count=Count("records"),
+        present_count=Count("records", filter=Q(records__status="PRESENT")),
+        absent_count=Count("records", filter=Q(records__status="ABSENT")),
+        leave_count=Count("records", filter=Q(records__status="LEAVE")),
+    )
+    if request.user.role == "TEACHER":
+        qs = qs.filter(
+            section__teaching_assignments__teacher__user=request.user,
+            section__teaching_assignments__is_active=True,
+        )
+    return qs.distinct()
+
+
+def _teacher_can_access_section(request, section):
+    return request.user.is_superuser or request.user.role == "ADMIN" or TeachingAssignment.objects.filter(
+        teacher__user=request.user, section=section, is_active=True,
+        teacher__is_active=True,
+    ).exists()
+
+
+@role_required("TEACHER", "ADMIN")
+def attendance_dashboard(request):
+    today = date.today()
+    sessions = _attendance_session_queryset(request)
+    sections = _attendance_sections(request)
+    today_sessions = sessions.filter(date=today)
+    return render(request, "attendance/dashboard.html", {
+        "active_page": "attendance_dashboard",
+        "sections": sections,
+        "today_sessions": today_sessions,
+        "section_count": sections.count(),
+        "student_count": Student.objects.filter(section__in=sections, status="ACTIVE").distinct().count(),
+        "submitted_today": today_sessions.filter(status="SUBMITTED").count(),
+        "draft_today": today_sessions.filter(status="DRAFT").count(),
+        "present_today": today_sessions.filter(date=today, records__status="PRESENT").count(),
+        "absent_today": today_sessions.filter(date=today, records__status="ABSENT").count(),
+        "leave_today": today_sessions.filter(date=today, records__status="LEAVE").count(),
+    })
+
+
+@role_required("TEACHER")
+def attendance_take(request, section_id=None, session_id=None):
+    if section_id is None:
+        raw_section_id = request.POST.get("section_id") or request.GET.get("section_id")
+        if raw_section_id:
+            try:
+                section_id = int(raw_section_id)
+            except (TypeError, ValueError):
+                section_id = None
+    sections = _attendance_sections(request)
+    selected_section = get_object_or_404(sections, pk=section_id) if section_id else None
+    selected_date = request.POST.get("date") or request.GET.get("date") or date.today().isoformat()
+    try:
+        selected_date = date.fromisoformat(selected_date)
+    except ValueError:
+        selected_date = date.today()
+    future_requested = selected_date > date.today()
+    if future_requested:
+        messages.error(request, "Attendance date cannot be in the future.")
+        selected_date = date.today()
+    session = None
+    if session_id:
+        session = get_object_or_404(AttendanceSession, pk=session_id)
+        if not _teacher_can_access_section(request, session.section):
+            return redirect("dashboard")
+        selected_section = session.section
+    elif selected_section:
+        session = AttendanceSession.objects.filter(section=selected_section, date=selected_date).first()
+    students = Student.objects.filter(section=selected_section, status="ACTIVE").order_by("roll_number") if selected_section else Student.objects.none()
+    records = {record.student_id: record for record in session.records.all()} if session else {}
+    if request.method == "POST" and selected_section and not future_requested:
+        action = request.POST.get("action", "draft")
+        statuses = {}
+        invalid = False
+        for student in students:
+            status = request.POST.get(f"status_{student.pk}", "")
+            if status not in dict(AttendanceRecord.STATUS_CHOICES):
+                invalid = True
+            statuses[student.pk] = status
+        if action == "submit" and (invalid or len(statuses) != students.count() or any(not value for value in statuses.values())):
+            messages.error(request, "Every eligible student must have a valid attendance status before submission.")
+        elif invalid:
+            messages.error(request, "Attendance contains an invalid status.")
+        else:
+            try:
+                with transaction.atomic():
+                    session, created = AttendanceSession.objects.select_for_update().get_or_create(
+                        section=selected_section,
+                        date=selected_date,
+                        defaults={"taken_by": request.user.teacher_profile, "status": "DRAFT"},
+                    )
+                    if session.status in {"LOCKED", "SUBMITTED"}:
+                        raise ValueError("This attendance session is no longer editable.")
+                    session.taken_by = request.user.teacher_profile
+                    session.status = "SUBMITTED" if action == "submit" else "DRAFT"
+                    session.save(update_fields=["taken_by", "status", "updated_at"])
+                    existing = {r.student_id: r for r in session.records.select_for_update()}
+                    AttendanceRecord.objects.bulk_create([
+                        AttendanceRecord(
+                            session=session, student=student, status=statuses[student.pk],
+                            remarks=request.POST.get(f"remarks_{student.pk}", ""),
+                            marked_by=request.user.teacher_profile,
+                        )
+                        for student in students if student.pk not in existing
+                    ])
+                    for student in students:
+                        record = existing.get(student.pk)
+                        if record:
+                            record.status = statuses[student.pk]
+                            record.remarks = request.POST.get(f"remarks_{student.pk}", "")
+                            record.marked_by = request.user.teacher_profile
+                    if existing:
+                        AttendanceRecord.objects.bulk_update(
+                            list(existing.values()), ["status", "remarks", "marked_by", "updated_at"]
+                        )
+            except (IntegrityError, ValueError) as exc:
+                messages.error(request, str(exc) or "The attendance session could not be saved.")
+            else:
+                messages.success(request, "Attendance submitted." if action == "submit" else "Draft saved.")
+                return redirect("attendance_take_session", session_id=session.pk)
+    student_rows = [{"student": student, "record": records.get(student.pk)} for student in students]
+    return render(request, "attendance/take.html", {
+        "active_page": "attendance_take", "sections": sections,
+        "selected_section": selected_section, "selected_date": selected_date,
+        "session": session, "student_rows": student_rows,
+        "statuses": dict(AttendanceRecord.STATUS_CHOICES),
+    })
+
+
+@role_required("TEACHER", "ADMIN")
+def attendance_history(request):
+    sections = _attendance_sections(request)
+    form = AttendanceFilterForm(request.GET or None, sections=sections)
+    sessions = _attendance_session_queryset(request)
+    if form.is_valid():
+        data = form.cleaned_data
+        if data.get("date"):
+            sessions = sessions.filter(date=data["date"])
+        if data.get("start_date"):
+            sessions = sessions.filter(date__gte=data["start_date"])
+        if data.get("end_date"):
+            sessions = sessions.filter(date__lte=data["end_date"])
+        if data.get("section"):
+            sessions = sessions.filter(section=data["section"])
+        if data.get("status"):
+            sessions = sessions.filter(status=data["status"])
+    return render(request, "attendance/history.html", {
+        "active_page": "attendance_history", "form": form,
+        "sessions": sessions.order_by("-date", "section__name"),
+    })
+
+
+@role_required("TEACHER", "ADMIN")
+def attendance_session_detail(request, session_id):
+    session = get_object_or_404(_attendance_session_queryset(request), pk=session_id)
+    records = session.records.select_related("student").order_by("student__roll_number")
+    return render(request, "attendance/session_detail.html", {
+        "active_page": "attendance_history", "session": session, "records": records,
+    })
+
+
+@role_required("ADMIN")
+def admin_attendance_dashboard(request):
+    return attendance_dashboard(request)
+
+
+@role_required("ADMIN")
+def attendance_lock(request, session_id):
+    if request.method == "POST":
+        session = get_object_or_404(AttendanceSession, pk=session_id)
+        session.status = "LOCKED"
+        session.save(update_fields=["status", "updated_at"])
+        messages.success(request, "Attendance session locked.")
+    return redirect("attendance_session_detail", session_id=session_id)
+
+
+@role_required("ADMIN")
+def attendance_reopen(request, session_id):
+    if request.method == "POST":
+        session = get_object_or_404(AttendanceSession, pk=session_id)
+        session.status = "DRAFT"
+        session.save(update_fields=["status", "updated_at"])
+        messages.success(request, "Attendance session reopened for correction.")
+    return redirect("attendance_session_detail", session_id=session_id)
+
+
+@role_required("ADMIN")
+def attendance_correct(request, record_id):
+    record = get_object_or_404(AttendanceRecord.objects.select_related("session"), pk=record_id)
+    form = AttendanceCorrectionForm(request.POST or None, initial={"status": record.status})
+    if request.method == "POST" and form.is_valid():
+        if record.session.status == "LOCKED":
+            messages.error(request, "Unlock the session before correcting attendance.")
+        else:
+            with transaction.atomic():
+                old_status = record.status
+                record.status = form.cleaned_data["status"]
+                record.save(update_fields=["status", "updated_at"])
+                AttendanceCorrection.objects.create(
+                    record=record, previous_status=old_status,
+                    new_status=record.status, changed_by=request.user,
+                    reason=form.cleaned_data["reason"],
+                )
+            messages.success(request, "Attendance correction recorded.")
+            return redirect("attendance_session_detail", session_id=record.session_id)
+    return render(request, "attendance/correct.html", {"form": form, "record": record, "active_page": "attendance_history"})

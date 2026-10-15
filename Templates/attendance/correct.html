@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Correct Attendance{% endblock %}
+{% block extra_css %}
+<style>
+    .attendance-correction {
+        max-width: 720px;
+        margin: 0 auto;
+    }
+
+    .attendance-correction .card {
+        overflow: hidden;
+        border: 1px solid #dbeafe;
+        border-radius: 1rem;
+        box-shadow: 0 14px 32px rgba(30, 64, 175, 0.08);
+    }
+
+    .attendance-correction .card-header {
+        padding: 1.35rem 1.5rem;
+        background: radial-gradient(circle at 100% 0, rgba(124, 58, 237, 0.14), transparent 38%), linear-gradient(120deg, #eef5ff, #ffffff 72%);
+        border-bottom-color: #dbeafe;
+    }
+
+    .attendance-correction .card-title {
+        color: #172554;
+        letter-spacing: -0.025em;
+    }
+
+    .attendance-correction .card-body {
+        padding: 1.5rem;
+    }
+
+    .attendance-correction form p {
+        display: grid;
+        gap: 0.4rem;
+        margin-bottom: 1.1rem;
+        color: #172554;
+        font-size: 0.82rem;
+        font-weight: 700;
+    }
+
+    .attendance-correction form input,
+    .attendance-correction form select,
+    .attendance-correction form textarea {
+        width: 100%;
+        padding: 0.7rem 0.8rem;
+        border: 1px solid #bfdbfe;
+        border-radius: 0.6rem;
+        background: #fbfdff;
+        color: #1e293b;
+        font: inherit;
+        font-weight: 400;
+    }
+
+    .attendance-correction form textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .attendance-correction form input:focus,
+    .attendance-correction form select:focus,
+    .attendance-correction form textarea:focus {
+        outline: none;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.13);
+    }
+
+    .attendance-correction form .btn {
+        min-height: 2.7rem;
+        border-radius: 0.6rem;
+        font-weight: 700;
+    }
+</style>
+{% endblock %}
+{% block content %}<div class="attendance-correction"><div class="card"><div class="card-header"><h1 class="card-title">Correct {{ record.student.name }} attendance</h1></div><div class="card-body"><form method="post">{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary">Save Correction</button></form></div></div></div>{% endblock %}

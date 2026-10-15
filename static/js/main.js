@@ -9,12 +9,34 @@ document.addEventListener('DOMContentLoaded', function () {
     const sidebarToggle = document.getElementById('sidebarToggle');
     const sidebar = document.querySelector('.app-sidebar');
     const sidebarBackdrop = document.getElementById('sidebarBackdrop');
+    const appLayout = document.querySelector('.app-layout');
 
-    if (sidebarToggle && sidebar) {
+    if (sidebarToggle && sidebar && appLayout) {
         sidebarToggle.addEventListener('click', function () {
-            sidebar.classList.toggle('active');
+            const isMobile = window.matchMedia('(max-width: 1024px)').matches;
+
+            if (isMobile) {
+                appLayout.classList.remove('sidebar-collapsed');
+                sidebar.classList.toggle('active');
+                sidebarToggle.setAttribute(
+                    'aria-expanded',
+                    sidebar.classList.contains('active') ? 'true' : 'false'
+                );
+            } else {
+                sidebar.classList.remove('active');
+                appLayout.classList.toggle('sidebar-collapsed');
+                sidebarToggle.setAttribute(
+                    'aria-expanded',
+                    appLayout.classList.contains('sidebar-collapsed') ? 'false' : 'true'
+                );
+            }
+
             if (sidebarBackdrop) {
-                sidebarBackdrop.classList.toggle('active');
+                if (isMobile) {
+                    sidebarBackdrop.classList.toggle('active');
+                } else {
+                    sidebarBackdrop.classList.remove('active');
+                }
             }
         });
     }
@@ -23,6 +45,12 @@ document.addEventListener('DOMContentLoaded', function () {
         sidebarBackdrop.addEventListener('click', function () {
             sidebar.classList.remove('active');
             sidebarBackdrop.classList.remove('active');
+            if (appLayout) {
+                appLayout.classList.remove('sidebar-collapsed');
+            }
+            if (sidebarToggle) {
+                sidebarToggle.setAttribute('aria-expanded', 'false');
+            }
         });
     }
 
@@ -131,6 +159,8 @@ document.addEventListener('DOMContentLoaded', function () {
             if (userDropdownMenu) userDropdownMenu.classList.remove('active');
             if (sidebar) sidebar.classList.remove('active');
             if (sidebarBackdrop) sidebarBackdrop.classList.remove('active');
+            if (appLayout) appLayout.classList.remove('sidebar-collapsed');
+            if (sidebarToggle) sidebarToggle.setAttribute('aria-expanded', 'false');
         }
     });
 

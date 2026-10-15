@@ -363,7 +363,7 @@ class StudentAttendance(models.Model):
     student = models.ForeignKey(
         Student,
         on_delete=models.CASCADE,
-        related_name='attendance_records'
+        related_name='legacy_attendance_records'
     )
 
     teaching_assignment = models.ForeignKey(
@@ -414,3 +414,123 @@ class StudentAttendance(models.Model):
             f"{self.date} - "
             f"{self.get_status_display()}"
         )
+
+class AttendanceSession(models.Model):
+    STATUS_CHOICES = (
+        ('DRAFT', 'Draft'),
+        ('SUBMITTED', 'Submitted'),
+        ('LOCKED', 'Locked'),
+    )
+
+    section = models.ForeignKey(
+        Section,
+        on_delete=models.PROTECT,
+        related_name='attendance_sessions'
+    )
+
+    date = models.DateField()
+
+    taken_by = models.ForeignKey(
+        Teacher,
+        on_delete=models.PROTECT,
+        related_name='attendance_sessions'
+    )
+
+    status = models.CharField(
+        max_length=15,
+        choices=STATUS_CHOICES,
+        default='DRAFT'
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-date', 'section']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['section', 'date'],
+                name='unique_section_attendance_per_day'
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.section} - {self.date}"
+
+
+class AttendanceRecord(models.Model):
+    STATUS_CHOICES = (
+        ('PRESENT', 'Present'),
+        ('ABSENT', 'Absent'),
+        ('LEAVE', 'Leave'),
+    )
+
+    session = models.ForeignKey(
+        AttendanceSession,
+        on_delete=models.CASCADE,
+        related_name='records'
+    )
+
+    student = models.ForeignKey(
+        Student,
+        on_delete=models.PROTECT,
+        related_name='attendance_records'
+    )
+
+    status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES
+    )
+
+    remarks = models.TextField(
+        blank=True,
+        null=True
+    )
+
+    marked_by = models.ForeignKey(
+        Teacher,
+        on_delete=models.PROTECT,
+        related_name='marked_attendance_records'
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['student__roll_number']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['session', 'student'],
+                name='unique_student_per_attendance_session'
+            ),
+        ]
+
+    def __str__(self):
+        return (
+            f"{self.student.roll_number} - "
+            f"{self.session.date} - "
+            f"{self.get_status_display()}"
+        )
+
+
+class AttendanceCorrection(models.Model):
+    record = models.ForeignKey(
+        AttendanceRecord,
+        on_delete=models.PROTECT,
+        related_name='corrections',
+    )
+    previous_status = models.CharField(max_length=10, choices=AttendanceRecord.STATUS_CHOICES)
+    new_status = models.CharField(max_length=10, choices=AttendanceRecord.STATUS_CHOICES)
+    changed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name='attendance_corrections',
+    )
+    reason = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.record} corrected by {self.changed_by}"
