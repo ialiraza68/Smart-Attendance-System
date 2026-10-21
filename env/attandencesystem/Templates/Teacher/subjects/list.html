@@ -1,0 +1,4 @@
+{% extends "base.html" %}{% load static %}
+{% block title %}My Subjects · Teacher Portal{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/tables.css' %}">{% endblock %}
+{% block content %}<div class="page-header"><div><h1 class="page-title">My Subjects</h1><p class="page-description">Curriculum courses currently assigned to your portfolio.</p></div></div><div class="table-card"><div class="table-responsive"><table class="data-table"><thead><tr><th>Subject Code</th><th>Subject Title</th><th>Assigned Sections</th><th>Total Students</th><th>Status</th></tr></thead><tbody>{% for subject in subjects %}<tr><td>{{ subject.code }}</td><td>{{ subject.name }}</td><td>{{ subject.assigned_sections }}</td><td>{{ subject.assigned_students }}</td><td><span class="badge badge-active">ACTIVE COURSE</span></td></tr>{% empty %}<tr><td colspan="5">No active subjects found.</td></tr>{% endfor %}</tbody></table></div></div>{% endblock %}

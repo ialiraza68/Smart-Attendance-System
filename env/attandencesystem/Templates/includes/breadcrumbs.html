@@ -1,0 +1,22 @@
+<!-- Reusable Breadcrumbs Navigation -->
+{% if breadcrumbs %}
+<div class="app-breadcrumbs">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb-list">
+            <li class="breadcrumb-item">
+                <a href="{% url 'dashboard' %}"><i class="fa-solid fa-house" style="font-size: 0.75rem;"></i></a>
+            </li>
+            {% for crumb in breadcrumbs %}
+                <li class="breadcrumb-separator">/</li>
+                {% if forloop.last %}
+                    <li class="breadcrumb-item active" aria-current="page">{{ crumb.title }}</li>
+                {% else %}
+                    <li class="breadcrumb-item">
+                        {% if crumb.url %}<a href="{{ crumb.url }}">{{ crumb.title }}</a>{% else %}<span>{{ crumb.title }}</span>{% endif %}
+                    </li>
+                {% endif %}
+            {% endfor %}
+        </ol>
+    </nav>
+</div>
+{% endif %}

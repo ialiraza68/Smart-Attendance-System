@@ -1,0 +1,247 @@
+/* ==========================================================================
+   Django Student Management System - Tables Styles
+   Static file: static/css/tables.css
+   ========================================================================== */
+
+.table-card {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 1.5rem;
+}
+
+/* Toolbar & Filter Bar */
+.table-toolbar {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    background-color: var(--color-surface);
+}
+
+.table-search-box {
+    display: flex;
+    align-items: center;
+    position: relative;
+    min-width: 260px;
+    flex: 1;
+    max-width: 360px;
+}
+
+.table-search-input {
+    width: 100%;
+    padding: 0.5rem 0.75rem 0.5rem 2.2rem;
+    font-size: 0.85rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background-color: var(--color-surface-subtle);
+}
+
+.table-search-icon {
+    position: absolute;
+    left: 0.75rem;
+    color: var(--color-text-subtle);
+    font-size: 0.85rem;
+    pointer-events: none;
+}
+
+.table-filters {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.table-filter-select {
+    padding: 0.45rem 0.75rem;
+    font-size: 0.85rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background-color: var(--color-surface);
+    color: var(--color-text-main);
+}
+
+/* Table Container & Table Styles */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.875rem;
+}
+
+.data-table thead th {
+    background-color: var(--color-surface-subtle);
+    color: var(--color-text-muted);
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--color-border);
+    white-space: nowrap;
+}
+
+.data-table tbody td {
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-text-main);
+    vertical-align: middle;
+}
+
+.data-table tbody tr {
+    transition: background-color var(--transition-fast);
+}
+
+.data-table tbody tr:hover {
+    background-color: var(--color-surface-hover);
+}
+
+.data-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Specific Column Styles */
+.col-avatar {
+    width: 44px;
+}
+
+.table-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: var(--radius-md);
+    object-fit: cover;
+    background-color: var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+}
+
+.student-name-cell {
+    font-weight: 600;
+    color: var(--color-text-main);
+}
+
+.student-sub-cell {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+}
+
+.table-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    justify-content: flex-end;
+}
+
+/* Pagination Bar */
+.pagination-container {
+    padding: 0.85rem 1.25rem;
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: var(--color-surface);
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.pagination-info {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.pagination-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    list-style: none;
+}
+
+.page-item .page-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--color-text-main);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background-color: var(--color-surface);
+    transition: all var(--transition-fast);
+    text-decoration: none;
+    font-variant-numeric: tabular-nums;
+}
+
+.page-item.active .page-link {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.page-item .page-link:hover:not(.disabled) {
+    background-color: var(--color-surface-hover);
+    border-color: var(--color-border-dark);
+}
+
+.page-item.disabled .page-link {
+    color: var(--color-text-subtle);
+    cursor: not-allowed;
+    background-color: var(--color-surface-subtle);
+    border-color: var(--color-border);
+}
+
+/* Empty State */
+.empty-state {
+    padding: 3rem 1.5rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.empty-state-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-color: var(--color-surface-subtle);
+    color: var(--color-text-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.empty-state-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text-main);
+    margin-bottom: 0.35rem;
+}
+
+.empty-state-desc {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    max-width: 360px;
+    margin-bottom: 1.25rem;
+}

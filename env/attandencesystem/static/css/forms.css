@@ -1,0 +1,181 @@
+/* ==========================================================================
+   Django Student Management System - Forms Styles
+   Static file: static/css/forms.css
+   Compatible with standard Django model form rendering
+   ========================================================================== */
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 1.25rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.col-12 { grid-column: span 12; }
+.col-8 { grid-column: span 8; }
+.col-6 { grid-column: span 6; }
+.col-4 { grid-column: span 4; }
+.col-3 { grid-column: span 3; }
+
+@media (max-width: 768px) {
+    .col-8, .col-6, .col-4, .col-3 {
+        grid-column: span 12;
+    }
+}
+
+.form-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-text-main);
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.form-label-required::after {
+    content: "*";
+    color: var(--color-danger);
+    font-weight: 700;
+}
+
+.form-control,
+.form-select,
+.form-textarea {
+    width: 100%;
+    padding: 0.55rem 0.85rem;
+    font-size: 0.9rem;
+    font-family: inherit;
+    color: var(--color-text-main);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.form-control:focus,
+.form-select:focus,
+.form-textarea:focus {
+    outline: none;
+    border-color: var(--color-primary-light);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.form-control::placeholder,
+.form-textarea::placeholder {
+    color: var(--color-text-subtle);
+}
+
+.form-control:disabled,
+.form-select:disabled,
+.form-textarea:disabled {
+    background-color: var(--color-surface-hover);
+    color: var(--color-text-subtle);
+    cursor: not-allowed;
+}
+
+.form-textarea {
+    min-height: 90px;
+    resize: vertical;
+}
+
+.form-help {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+}
+
+.form-check {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: 0.25rem;
+    cursor: pointer;
+}
+
+.form-check-input {
+    width: 17px;
+    height: 17px;
+    border: 1px solid var(--color-border-dark);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    accent-color: var(--color-primary);
+}
+
+.form-check-label {
+    font-size: 0.875rem;
+    color: var(--color-text-main);
+    cursor: pointer;
+    user-select: none;
+}
+
+/* File Upload Dropzone */
+.file-upload-box {
+    border: 2px dashed var(--color-border-dark);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    text-align: center;
+    background-color: var(--color-surface-subtle);
+    cursor: pointer;
+    transition: border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.file-upload-box:hover {
+    border-color: var(--color-primary-light);
+    background-color: var(--color-primary-subtle);
+}
+
+.file-upload-icon {
+    font-size: 1.75rem;
+    color: var(--color-primary);
+    margin-bottom: 0.5rem;
+}
+
+.file-upload-text {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+}
+
+.file-upload-text strong {
+    color: var(--color-primary-light);
+}
+
+.avatar-preview-container {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.avatar-preview-img {
+    width: 80px;
+    height: 80px;
+    border-radius: var(--radius-md);
+    border: 2px solid var(--color-border);
+    object-fit: cover;
+    background-color: var(--color-surface-hover);
+}
+
+/* Form Actions Bar */
+.form-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--color-border);
+}
+
+/* Form Validation States */
+.is-invalid {
+    border-color: var(--color-danger) !important;
+}
+
+.invalid-feedback {
+    font-size: 0.75rem;
+    color: var(--color-danger);
+    margin-top: 0.2rem;
+}

@@ -1,0 +1,22 @@
+<!-- Reusable Django Flash Messages Component -->
+<div class="app-messages">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }}" role="alert">
+                <div class="alert-content">
+                    {% if message.tags == 'success' %}
+                        <i class="fa-regular fa-circle-check"></i>
+                    {% elif message.tags == 'warning' %}
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    {% elif message.tags == 'danger' or message.tags == 'error' %}
+                        <i class="fa-solid fa-circle-xmark"></i>
+                    {% else %}
+                        <i class="fa-solid fa-circle-info"></i>
+                    {% endif %}
+                    <span>{{ message }}</span>
+                </div>
+                <button type="button" class="alert-dismiss" aria-label="Dismiss alert">&times;</button>
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>
