@@ -1,4 +1,4 @@
-﻿from datetime import date
+from datetime import date
 from functools import wraps
 
 from django.contrib import messages
@@ -62,7 +62,11 @@ def login_view(request):
         return redirect("dashboard")
     error = None
     if request.method == "POST":
-        user = authenticate(request, username=request.POST.get("username", ""), password=request.POST.get("password", ""))
+        user = authenticate(
+            request,
+            username=request.POST.get("username", ""),
+            password=request.POST.get("password", ""),
+        )
         if user:
             login(request, user)
             return redirect(request.GET.get("next") or "dashboard")

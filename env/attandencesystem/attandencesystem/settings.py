@@ -12,22 +12,32 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 
 from pathlib import Path
 import dj_database_url
-from decouple import config
+from decouple import AutoConfig
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+config = AutoConfig(search_path=str(BASE_DIR))
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config('SECRET_KEY')
+SECRET_KEY = config(
+    'SECRET_KEY',
+    default='django-insecure-local-development-key-change-me',
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS').split(',')
+# The hosts that are allowed to access the application
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in config('ALLOWED_HOSTS', default='127.0.0.1,localhost').split(',')
+    if host.strip()
+]
+
 
 
 # Application definition
@@ -85,7 +95,11 @@ DATABASES = {
     }
 }
 
-DATABASES['default'] = dj_database_url.parse('postgresql://attendance_system_72x9_user:tVZUpAS1xOVhspfiM3KdczE9ZDatUBmy@dpg-dbc5b04s728c73e2lbs0-a.ohio-postgres.render.com/attendance_system_72x9')
+DATABASES = {
+    'default': dj_database_url.config(
+        default=config('DATABASE_URL', default='sqlite:///db.sqlite3')
+    )
+}
 
 
 # Password validation
